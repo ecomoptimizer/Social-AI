@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social-AI- The AIO Social Media Creation Studio</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+body {font-family: 'Helvetica', sans-serif;line-height: 1.5;margin: 0;padding: 0;}
+.wrapper { padding: 25px 25px;}
+.light-mode {background-color: #f4f4f4;border: 1px solid #eaeaea;color: #333;}
+.dark-mode {background-color: #000;color: #ffffff;}
+
+.header, .input-field /*.output-wrapper */{ margin-bottom: 20px; padding: 30px; border-radius: 10px; background-color: #fff;}
+
+.text-button { display: flex; justify-content: space-between; align-items: center;}
+.btn { padding: 10px 20px; border: non7e; border-radius: 10px; cursor: pointer; background-color: #4CAF50; color: #fff; transition: background-color 0.3s;}
+.btn:hover { background-color: #45a049;}
+
+.input-field { display: flex; flex-direction: column; gap: 20px;}
+/*.user_data, .user_drop .inputbox { display: flex; justify-content: space-between; gap: 10px;}*/
+#uploadInputsButton { height: 50px;}
+.inputs { display: flex; flex-direction: column; width: 48%; /* Adjusts for 2 columns in user_data */}
+.user_drop .inputs {width: 31%; /* Adjusts for 3 columns in user_drop */}
+.inputs label { margin-right: 10px;}
+.text-field, .dropd { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;}
+.inputbox { display: inline-flex; flex-wrap: wrap;}
+/* selectbox*/
+.file-uploader { margin-top: 25px;} fieldset { border-radius: 10px;}
+.optiontitle {clear: both;} label { margin-left: 10px;}
+.container { display: block; position: relative; padding-left: 35px; margin-bottom: 12px; cursor: pointer; font-size: 22px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; border-radius: 15px; font-size: 15px; margin-right: 35px; font-weight: bolder;}
+.container input { position: absolute; opacity: 0; cursor: pointer;}
+.checkmark { position: absolute; top: 0; left: 0; height: 25px; width: 25px; background-color: #eee; border-radius: 50%; border: gray solid 1px;}
+.container:hover input ~ .checkmark { background-color: #ccc;}
+.container input:checked ~ .checkmark { background-color: #2196F3;}
+.checkmark:after { content: ""; position: absolute; display: none;}
+.container input:checked ~ .checkmark:after { display: block;}
+.container .checkmark:after { top: 9px; left: 9px; width: 8px; height: 8px; border-radius: 50%; background: white;}
+#output, #user-input, .text-field { border-radius: 15px; overflow-y: auto; scrollbar-width: thin; border-width: thin; border-style: solid; margin-bottom: 20px; width: -moz-available; width: -webkit-fill-available;}
+pre#output {text-wrap: wrap;}
+#output { border-style: solid; height: 800px;}
+#userInputForm, .uploader { display: flex; flex-wrap: wrap; justify-content: space-between; width: 100%;}
+button {padding: 1em 3.5em;margin: 0 2em;border-radius: 12px;border: none;cursor: pointer; font-size: 15px; font-weight: 700; min-height: 50px;}
+button:hover {transform: translateY(-4px);}.button-container {display: flex;justify-content: space-between;}
+.button-container button {border-radius: 6px;}.input-chat {display: flex;flex-direction: column;align-items: flex-end;}
+#submit{}
+.loading-indicator {display: none;position: fixed;top: 0;left: 0;width: 100vw;height: 100vh;justify-content: center;align-items: center;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;}
+.loading-indicator svg {width: 30vw;height: 30vw;}svg circle {transform-origin: center;transform: rotate(-90deg);}
+
+body.light-mode {background-color: #fff;}
+body.light-mode .wrapper {background-color: #f4f4f4;border: 1px solid #c4c3c3;}
+body.light-mode .header, body.light-mode .input-field {
+	background-color: #ffffff;color: #333;border-style: solid;border-width: 3px;border-color: rgba(69, 126, 234, 0.33);-webkit-box-shadow: 2px 2px 8px 0px rgba(224, 224, 224, 1);-moz-box-shadow: 2px 2px 8px 0px rgba(224, 224, 224, 1);box-shadow: 2px 2px 8px 0px rgb(193, 191, 191);}
+body.light-mode textarea#user_input, body.light-mode .text-field, body.light-mode #product, body.light-mode #competitor, body.light-mode #audience, body.light-mode #output, body.light-mode select.dropd { background-color: #f0f0f0;font-size: 15px;padding: 15px;color: #333;border-color: #1e90ff38;}
+body.light-mode #user_input, body.light-mode #output, body.light-mode .text-field {scrollbar-color: rebeccapurple green;border-color: gray;}
+body.light-mode button { background-color: #007BFF;color: #ffffff;}
+body.light-mode button#printBtn:hover, body.light-mode button#resetBtn:hover, body.light-mode button#submit:hover, body.light-mode button#toggleTheme:hover { background-color: #004691;}
+body.dark-mode {background-color: #000;}
+body.dark-mode .wrapper {background-color: #2a2a2a;}
+body.dark-mode .header, body.dark-mode .input-field {
+	background-color: #000;border-style: solid;border-width: 2px;border-color: rgb(83, 83, 83);-webkit-box-shadow: 2px 2px 20px 0px rgb(74, 74, 74);-moz-box-shadow: 2px 2px 20px 0px rgb(74, 74, 74);box-shadow: 2px 2px 20px 0px rgb(74, 74, 74);}
+body.dark-mode textarea#user_input, body.dark-mode .text-field, body.dark-mode #product, body.dark-mode #competitor, body.dark-mode #audience, body.dark-mode #output, body.dark-mode select.dropd { background-color: #1f1f1f;font-size: 15px;padding: 15px;color: #e0e0e0;border: 1px solid #444;}
+body.dark-mode #user_input, body.dark-mode #output, body.dark-mode .text-field {scrollbar-color: rebeccapurple green;border-color: gray;}
+body.dark-mode button {background-color: #FF5733;color: #ffffff;}
+body.dark-mode button#printBtn:hover, body.dark-mode button#resetBtn:hover, body.dark-mode button#submit:hover, body.dark-mode button#toggleTheme:hover { background-color: #7b2c1b;}
+@media print {body * {visibility: hidden;} body {fontsize: 16px;}div.chat-box, .chat-box * {visibility: visible;} div.chat-box {border: none;box-shadow: none;position: absolute;left: 0;top: 0;width: 100%;height: auto;overflow: visible;}}
+.chat-box {overflow-y: scroll;}
+.chat-box::-webkit-scrollbar {width: 10px;height: 10px;}
+.chat-box::-webkit-scrollbar-thumb {background-color: #ccc;border-radius: 5px;}
+.chat-box::-webkit-scrollbar-track {background-color: #f2f2f2;}
+@media (max-width: 768px) { .button-container{flex-direction: column;align-items: stretch;}button {margin: 10px 0;}  .user_drop .inputs, .inputs { width: 95%;} .user_data, .user_drop {flex-direction: column;align-items: stretch;} }
+@media (max-width: 480px) { .user_data, .user_drop {flex-direction: column;align-items: stretch;} .user_drop .inputs, .inputs { width: 95%;} .button-container, .text-button {flex-direction: column; align-items: stretch;}
+button {margin: 10px 0;} .chat-box {height: 200px;}}
+/*.header, .input-wrapper, .output-wrapper, .input-field {width: calc(100% - 2px)}*/
+/*.header, .input-wrapper, .output-wrapper, .input-field {width: calc(100% - 1px);}*/
+  </style>
+</head>
+<body class="light-mode">
+ <div class="wrapper">
+    <!-- Top Full-Width Div -->
+    <div class="header">
+      <div class="text-button">
+          <h1 class="title">Social-AI, Social Media Content Creation Studio</h1>
+          <button id="toggleTheme" class="btn">Toggle Dark Mode</button>
+      </div>
+      <div class="header-text">
+        <h2>Welcome to Social-AI</h2> 
+        <h3>Build the perfect web copy for your social media.</h3>
+        <p>Scroll down to understand why we ask the questions that we do.</p>
+        <p>Enter your info in the fields below, type 'BEGIN' in the chat box and press Submit!</p>
+      </div>
+    </div>
+	 <div class="loading-indicator" style="display:none">
+		<svg width="100" height="100" viewBox="0 0 100 100">
+		  <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="#4CAF50" stroke-dasharray="157" stroke-dashoffset="157">
+		  <animate attributeName="stroke-dashoffset" values="157;0" dur="1.5s" repeatCount="indefinite"></animate>
+		</circle></svg>
+     </div>
+ 
+      <!-- Input Fields Div -->
+
+	 <div class="input-field">
+	    <div class="user_data">
+			<div class="uploader">
+                <h3>Upload your article and enter your info to start:</h3>
+                <div class="upload-input">
+                    <form action="/upload_file" method="post" enctype="multipart/form-data" id="fileUploadForm">
+						<fieldset class="file-uploader">
+							<legend>Choose A File To Upload</legend>
+							<label for="file">File:</label>
+							<input type="file" id="file" name="file"><br>
+							<button id="uploadFileButton" type="submit">Upload</button>
+						</fieldset>
+					</form>
+                </div>
+            </div>
+        <div class="user_data">
+            <form method="post" id="userInputForm">
+                   <div class="inputs">
+					<label for="topic">Topic:</label>
+					<input class="text-field" type="text" id="topic" name="topic" placeholder="Enter the topic of your article." required>
+				</div>
+				<div class="inputs">
+					<label for="intent" style="margin-left:10px;">Intent:</label>
+					<input class="text-field" type="text" id="intent" name="intent" placeholder="What is the intent of your posts?  For example, is it to drive traffic, drive sales, drive awareness, information, education?" required style="margin-left:10px; margin-right: 10px;">
+				</div>
+				<div class="inputs">
+					<label for="branded_hashtag" style="margin-left:10px;">Branded Hashtag:</label>
+					<input class="text-field" type="text" id="branded_hashtag" name="branded_hashtag" placeholder="Every brand should have a specific branded hashtag that is included with everything that is posted.  Enter yours here." required style="margin-left:10px; margin-right: 10px;">
+				</div>
+				<div class="inputs">
+					<label for="final_url">Enter the URL your posts will link to:</label>
+					<input class="text-field" type="text" id="final_url" name="final_url" placeholder="Enter the full URL that you want your posts to point to." required>
+				</div>
+				<div class="inputs">
+					<label for="target_audience" style="margin-left:10px;">Target audience:</label>
+					<textarea class="text-field" id="target_audience" name="target_audience" placeholder="Ex: Parents, grandparents or anyone concerned about small child safety or looking to purchase or gift an emergency airbag jacket." required style="margin-left:10px; margin-right: 10px;"></textarea>
+				</div>
+				<button id="uploadInputsButton" type="submit">Submit User Info</button>
+			</form>				
+		</div>
+        <div class="user_data">
+            <form action="/handle_platform" method="post" id="platformForm">
+                <fieldset>
+					<legend>Choose the platform/task option to perform. </legend>
+					<div class="inputbox">
+						<label class="container">Lead Magnet Ideas<input type="radio" name="platform" value="1"><span class="checkmark"></span></label>
+						<label class="container">Twitter Threads<input type="radio" name="platform" value="2"><span class="checkmark"></span></label>
+						<label class="container">LinkedIn Posts<input type="radio" name="platform" value="3"><span class="checkmark"></span></label>
+						<label class="container">Facebook Posts<input type="radio" name="platform" value="4"><span class="checkmark"></span></label>
+						<label class="container">Instagram Posts<input type="radio" name="platform" value="5"><span class="checkmark"></span></label>
+						<label class="container">Pinterest Posts<input type="radio" name="platform" value="6"><span class="checkmark"></span></label>
+						<label class="container">TikTok Video Scripts<input type="radio" name="platform" value="7"><span class="checkmark"></span></label>
+						<label class="container">YouTube Video Scripts<input type="radio" name="platform" value="8"><span class="checkmark"></span></label>
+						<label class="container">Mailing List Email<input type="radio" name="platform" value="9"><span class="checkmark"></span></label>
+						<label class="container">Email Welcome Sequence<input type="radio" name="platform" value="10"><span class="checkmark"></span></label>
+						<label class="container">Email Nurture Sequence`<input type="radio" name="platform" value="11"><span class="checkmark"></span></label>
+						<label class="container">Social Media calendar<input type="radio" name="platform" value="12"><span class="checkmark"></span></label>
+						<label class="container">Exit<input type="radio" name="platform" value="13"><span class="checkmark"></span></label>
+						<button type="submit">Select Platform</button>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+		<div class="output-wrapper">
+			<h3>Your posts and output will appear below.</h3>
+			<pre id="output" class="chat-box"></pre>
+			<div class="button-container">
+				<button id="printBtn" class="btn">Print</button>
+				<button id="resetBtn" class="btn">Reset</button>
+			</div>
+		</div>
+		<div class="input-wrapper">
+             <label for="user_input">Enter any additional resources or info here:</label>
+             <textarea id="user_input" name="user_input" placeholder="Fill out each of the fields above. Enter any aditional information here or the word -Begin- and press -Submit- to begin creating the web copy. The results will be displayed below.  Review the results. Enter any revisions in this chat box and press -Submit-. Continue the revision process until you are happy." style="padding: 15px; border-radius: 15px; height: 80px; margin-bottom: 15px; width: -moz-available;width: -webkit-fill-available;"></textarea> <button type="submit" id="sendMsgBtn" class="btn">Submit</button>
+    	</div>
+	 </div>
+ </div>
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Toggle Theme Functionality
+    document.getElementById('toggleTheme').addEventListener('click', function() {
+        const body = document.body;
+        body.classList.toggle('light-mode');
+        body.classList.toggle('dark-mode');
+    });
+
+    // Declare global variables to store the processed text data
+    var processedText = { text: null, summaries: null, post_summaries: null };
+
+    document.getElementById('fileUploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        fetch('/upload_file', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('File uploaded successfully!');
+            } else {
+                throw new Error('File upload failed.');
+            }
+        })
+        .catch(error => {
+            console.error("Error responding to upload request: " + error.message);
+        });
+    });
+
+    document.querySelector('#userInputForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var formInputs = {};
+        var formData = new FormData(event.target);
+        formData.forEach(function(value, key) {
+            formInputs[key] = value;
+        });
+        fetch('/get_inputs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formInputs)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            alert('Inputs uploaded successfully!');
+        })
+        .catch(error => {
+            console.error("Error uploading inputs:", error);
+        });
+    });
+
+	function formatOutput(output) {
+		// Define the regex patterns for new lines and separators
+		const newLineRegex = /(\n|^)(#|-{11}|Inst|Tweet|Caption:|Body:|AI_Image_prompt:|Content:|LM|Hashtags:|Image_descrip:|Human:|Socail-AI:|LI|FB|TK|LEmail|YT|NEmail|LEmail|Elist|Title:|{Scene)/g;
+		const separatorRegex = /(\n|^)-{11}(\n|$)/g;
+
+		// Replace the patterns with the desired formatting
+		output = output.replace(newLineRegex, '\n$2');
+		output = output.replace(separatorRegex, '\n\n-----------\n\n');
+
+		return output;
+	}
+
+
+    document.querySelector('#platformForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        handlePlatformSelection();
+    });
+
+    document.getElementById('sendMsgBtn').addEventListener('click', function() {
+        var userInput = document.getElementById('user_input').value;
+        var chatBox = document.getElementById('output');
+        // Show loading indicator
+        document.querySelector('.loading-indicator').style.display = 'flex';
+        // Append user message to chat box
+        chatBox.innerHTML += '<div>User: ' + userInput + '</div>';
+        // Clear the user input
+        document.getElementById('user_input').value = '';
+        // Send message to backend and get response
+        fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userInput })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error in chat request.');
+            }
+        })
+        .then(data => {
+            // Append response to chat box
+            chatBox.innerHTML += '<div>Social-AI: ' + data.response + '</div>';
+            // Scroll to the bottom of the chat box
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle error
+        })
+        .finally(() => {
+            // Hide loading indicator
+            document.querySelector('.loading-indicator').style.display = 'none';
+        });
+    });
+
+    // Reset the chat
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        document.getElementById('output').innerHTML = '';
+        document.getElementById('user_input').reset();
+    });
+
+    document.getElementById('printBtn').addEventListener('click', function(event) {
+        event.preventDefault();
+        const chatBoxDiv = document.querySelector('.chat-box');
+        const originalMaxHeight = chatBoxDiv.style.maxHeight;
+        chatBoxDiv.style.maxHeight = 'none';
+        window.print();
+        chatBoxDiv.style.maxHeight = originalMaxHeight;
+    });
+
+
+	function handlePlatformSelection() {
+		var platformForm = document.getElementById('platformForm');
+		var selectedPlatform = platformForm.elements['platform'].value;
+		fetch('/handle_platform', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ platform: selectedPlatform })
+		})
+		.then(response => {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw new Error('Error in handle_platform request.');
+			}
+		})
+		.then(data => {
+			var outputWindow = document.getElementById('output');
+			var formattedOutput = formatOutput(data.content); // Format the output
+			outputWindow.innerHTML += '<div>' + formattedOutput + '</div>';
+			// Scroll to the bottom of the output window
+			outputWindow.scrollTop = outputWindow.scrollHeight;
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			// Handle error
+		});
+	}
+});
+	</script>
+</body>
+</html>
