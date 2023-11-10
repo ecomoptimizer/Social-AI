@@ -1,0 +1,24 @@
+# Environment files
+.env
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
+
+# SQLite database
+db.sqlite3
+
+# VS Code settings
+.vscode/
+
+# Node modules
+node_modules/
+
+# Docker Compose overrides
+docker-compose.override.yml
+
+# Old Files
+template/

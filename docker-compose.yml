@@ -1,0 +1,12 @@
+version: '3'
+services:
+  social-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5065:5065"
+    env_file:
+      - ./.env
+    volumes:
+      - ./logs:/logs
