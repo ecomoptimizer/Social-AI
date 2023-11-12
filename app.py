@@ -1,7 +1,6 @@
 import io
 import nltk
 import langchain
-import openai
 import docker
 import os
 import logging.handlers
@@ -15,18 +14,20 @@ import chromadb
 from dotenv import load_dotenv
 load_dotenv()
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from fastapi import FastAPI, Form, Request, Response, File, Depends, HTTPException, status
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.encoders import jsonable_encoder
 import uvicorn
-from flask_caching import Cache
 from typing import List
 from IPython.display import Markdown
 from nltk.tokenize import sent_tokenize, word_tokenize
 nltk.download('punkt')
 from docx import Document
 from PyPDF2 import PdfFileReader
-from langchain.callbacks import StdOutCallbackHandler
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain import HuggingFaceHub
@@ -52,13 +53,9 @@ from langchain.schema import (
 
 print("Modules Loaded")
 
-langchain.verbose=True
-
-# Read JSON file
-import json
-with open('myconfig.json') as data_file:
-  myconfig = json.load(data_file)
-print(myconfig.keys())
+app = FastAPI()
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
+templates = Jinja2Templates(directory="templates")
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -68,6 +65,14 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG)  # Log to debug.l
 logger.info('This is a placeholder for an informational log message')
 logger.error('An is a placeholder for an error occurred')
 print("Logging Created")
+
+langchain.verbose=True
+
+# Read JSON file
+import json
+with open('myconfig.json') as data_file:
+  myconfig = json.load(data_file)
+print(myconfig.keys())
 
 messages = []
 global post_labels_history
@@ -86,43 +91,28 @@ print("Variables created")
 
 os.makedirs('./uploads', exist_ok=True)
 os.makedirs('logs/', exist_ok=True)
-os.makedirs('db/', exist_ok=True)
-os.makedirs('db/posts', exist_ok=True)
-os.makedirs('db/post_summaries', exist_ok=True)
-os.makedirs('db/text', exist_ok=True)
-persist_directory_text = 'db/text'
-persist_directory_posts = 'db/posts'
-persist_directory_post_summaries = 'db/post_summaries'
+#os.makedirs('db/', exist_ok=True)
+#os.makedirs('db/posts', exist_ok=True)
+#os.makedirs('db/post_summaries', exist_ok=True)
+#os.makedirs('db/text', exist_ok=True)
+#persist_directory_text = 'db/text'
+#persist_directory_posts = 'db/posts'
+#persist_directory_post_summaries = 'db/post_summaries'
 print("Directories created")
 
-
-app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+#cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 app.secret_key = '2041253taty!'
 
-@app.route('/')
-def index():
-    logger.debug("Request to index")
-    # Set session data
-    session['key'] = 'value'
-    logger.debug("Session value: %s", session.get("key"))
-    return render_template('index.html')
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
-@app.route('/get-session/')
-def get_session():
+@app.get('/session/')
+async def session():
     # Access session data
     value = session.get('key', 'default_value')
     return f"Session value: {value}"
 
-@app.errorhandler(500)
-def internal_error(error):
-    print(traceback.format_exc())
-    return "500 error"
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({"error": "Not found"}), 404
-   
 class TextLoader:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -132,8 +122,8 @@ class TextLoader:
             text = f.read()
         return [Document(page_content=text)]
         
-@app.route('/upload_file', methods=['POST'])
-def upload_file():
+@app.post('/upload_file')
+async def upload_file():
     global text, posts, post_summaries
     print("upload_file: Entering function")  # Debugging statement
     try:
@@ -191,10 +181,10 @@ model_name = "TheBloke/vicuna-7B-v1.5-16K-GPTQ"
 PATH_TO_WEIGHTS = 'path_to_model_weights.pt'
 
 # Load the model, mapping tensors to cuda:0 if you're using a GPU, or 'cpu' if you're using CPU.
-model = AutoModelForCausalLM.from_pretrained(model_name)
-#                                             device_map="auto",
-#                                             trust_remote_code=False,
-#                                             revision="gptq-4bit-64g-actorder_True")
+model = AutoModelForCausalLM.from_pretrained(model_name
+                                             device_map="auto",
+                                             trust_remote_code=False,
+                                             revision="gptq-4bit-64g-actorder_True")
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
@@ -849,8 +839,8 @@ def handle_platform():
 human_message_prompt = HumanMessagePromptTemplate.from_template(user_input)
 chat_prompt = ChatPromptTemplate.from_messages([human_message_prompt])
 
-@app.route('/chat', methods=['POST'])
-def chat_route_handler():
+@app.post('/chat')
+async def chat_route_handler():
     try:
         data = request.get_json()
         print(data)
@@ -890,4 +880,4 @@ if __name__ == "__main__":
 # Now 'messages' is known to the script, the loop will work
     for i, message in enumerate(messages):
         print(f'{i}: {message}')
-    uvicorn.run("app:app", host='0.0.0.0', port=5065, debug=True, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=5065, reload=True)
