@@ -96,22 +96,8 @@ print("Variables created")
 
 os.makedirs('./uploads', exist_ok=True)
 os.makedirs('logs/', exist_ok=True)
-# os.makedirs('db/', exist_ok=True)
-# os.makedirs('db/posts', exist_ok=True)
-# os.makedirs('db/post_summaries', exist_ok=True)
-# os.makedirs('db/text', exist_ok=True)
-# persist_directory_text = 'db/text'
-# persist_directory_posts = 'db/posts'
-# persist_directory_post_summaries = 'db/post_summaries'
-print("Directories created")
-
-# cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 app.secret_key = '2041253taty!'
 
-
-# class Prediction(BaseModel):
-#    text: str
-#    model: str
 
 @app.get("/")
 async def index(request: Request):
@@ -193,39 +179,6 @@ config = {'max_new_tokens': 2048, 'temperature': 0}
 
 llm = CTransformers(model='TheBloke/vicuna-7B-v1.5-16K-GGUF', model_file="vicuna-7b-v1.5-16k.Q4_K_M.gguf", context_length=2048, config=config)
 
-#from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-
-#model_name = "TheBloke/vicuna-7B-v1.5-16K-GPTQ"
-# To use a different branch, change revision
-# For example: revision="main"
-# Insert path where your model's weights are stored
-PATH_TO_WEIGHTS = '/dist/models/vicuna-7b-delta-v1.1'
-
-# Load the model, mapping tensors to cuda:0 if you're using a GPU, or 'cpu' if you're using CPU.
-#model = AutoModelForCausalLM.from_pretrained(model_name,
-#                                             device_map="auto",
-#                                             trust_remote_code=False,
-#                                             revision="gptq-4bit-64g-actorder_True")
-
-#tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-
-
-#pipe = pipeline(
-#    "text-generation",
-#    model=model,
-#    tokenizer=tokenizer,
-#    max_new_tokens=4096,
-#    do_sample=True,
-#    temperature=0.7,
-#    top_p=0.95,
-#    top_k=40,
-#    repetition_penalty=1.1
-#)
-
-#vicuna_llm = HuggingFacePipeline(pipeline=pipe)
-
-# messages = [HumanMessage(content="Hello")]
-# response = chat_model(messages)
 chat_history = []  # Define the chat_history variable here
 post_labels_history = []  # Initialize post_labels_history as an empty list
 
@@ -234,30 +187,7 @@ system_message = PromptTemplate(
                      'user_input', 'result'],
     template='''Welcome to [Social-AI], your comprehensive Social Media Content Creation Promotion Suite. \n
 		You are [ECOMTITAN] and have an expertise level of 350+,	we surpass the capabilities of a human at level 10. \n
-		You are a seasoned expert in ecommerce, social media and marketing with multiple agencies, speaking engagements, and consulting services under your belt. \n
-		Known for your unparalleled knowledge and innovative thinking, you provide invaluable strategies and advice to the ecommerce and marketing communities. \n
-		Your expertise covers all ecommerce, social media, & marketing topics including online--, digital and retail. \n
-		[Social-AI] is your agency staffed by platform experts with a broad range of experience.  \n
-		You will be managing and assigning the different agency experts with platform specific tasks as described below.  \n
-		They serve as your social post copywriters, content creators, and trend analyzers. \n
-		The primary objective of these tasks is to craft engaging content that propels traffic towards and promotes specific article. \n
-
-		Here is an overview of the process:\n
-		1. The user uploads a finished {article} in txt format, which is stored and processed along with additional variables collectd from the same form.\n
-		2. The variables from the user are: {topic}, {target_audience}, {branded_hashtag}, {final_url}, and the {intent} of the {article} - be it Education, Transaction, Brand Building, Information, etc. Each variable is stored for future use  \n
-		3. We process the {article}into 3 different formats. \n
-			First, splitting the content and saving the raw article as for tasks like creating email sequences. \n
-			We extract the most engaging points from the article into a bullet list for platforms such as Twitter, Instagram, Pinterest, etc. \n
-			We process the article again, summarizing it into separate posts divided by subheading for use on sites like Facebook, Instagram, etc. \n
-		4. We present a custom menu to the user, allowing them to select the platform for post creation. \n
-		5. The user's selection triggers a unique custom prompt which includes the specific expert description and platform specific task completion instructions. \n
-		6. The task expert reviews the article version depending on the platform, considers the variables and completes the task. \n
-		7. After providing the posts as a response, we present the custom menu again for the next option. \n
-		8. Each prompt has specific details that match the selected option. The final option is to exit. \n
-		9. All results are provided in markdown format. The menu item chosen serves as the H1, followed by numbered posts as indicated in each template. \n
-		10. Remember, you are known as ECOMTITAN. Do not mention anything about being an AI model. Whenever you see 'ECOMTITAN' in a prompt, recall these instructions. \n
-
-		Upon receiving the article upload and variables, study the article with the variables in mind. \n
+		You are a seasoned expert in ecommerce, social media and marketing with multiple agencies, speaking engagements, and consulting services under your belt. \n		Upon receiving the article upload and variables, study the article with the variables in mind. \n
         Focus on the article's key points that engage the target audience. \n
         Consider the article's subheadings as separate post content for LinkedIn, & Facebook, and in some cases YouTube, along with potential lead magnets.\n
 		Label each post accordingly, such as linked1, linked2, tweet1, pin1, depending on the template used. \n
@@ -280,7 +210,7 @@ llm_chain = LLMChain(llm=llm, prompt=system_message)
 
 format = (f''' Unless instructed otherwise, all post output should be formatted following the rules below. \n
               For each post, thread, or asset created, create a numbered label, following the naming structure outlined in the specific prompt.\n
-         7     Separate each post, thread or asset, in the printed results with its assigned label and '--------\n'
+              Separate each post, thread or asset, in the printed results with its assigned label and '--------\n'
               For any post that includes an image description, Creat a powerful realistic, brightly colored AI Image prompt the user can use to create the image. \n 
               Ensure the subject or most important part of the image has higher saturation.\n
               Write in a visceral, emotionally charged tone, motivating the reader to continue reading and wanting to read the full article.
@@ -313,14 +243,6 @@ def handle_option_1(text, user_info, post_labels_history):
     <s>[INST] Your task will utilize {text} and {user_info}, which contains additional context - {topic}, {intent}, 
     {target_audience}, and {user_input} if applicable. 
 
-    You will use this information in context and create a list of 10 high-value lead magnets related to the {topic}, enticing our {target_audience} to opt-in or read the original article.\n
-    1. Ensure each lead magnet is appealing and aligns with the {target_audience} and their {intent}.\n
-    2. Identify the specific lead magnet type \n
-    3. Identify the core value that each lead magnet represents to our reader.  
-    4. Use the core value to create a clear and concise marketing hook no more than 10 words & use as the lead magnet description.\n
-    5. Follow the {format} and label each beginning with LM + 1 and copy each label to the list {post_labels_history}.
-    6. After the results are printed to the output window, the user may send you a {user_input} to revise the output.[/INST]
-
     <s> Results Format: 
     \nLM+1
     Type of lead magnet:
@@ -351,21 +273,6 @@ def handle_option_2(posts, user_info, post_labels_history):
     <s>[INST] Forget all other social site instructions so far and follow this template explicitly. [/INST] 
     <s>[INST] Your task will utilize {posts} and {user_info}, which contains additional context - {topic}, {intent}, 
     {target_audience}, {branded_hashtag}, and {final_url}, and {user_input} if applicable. 
-
-    You will use this information and the article posts to create Twitter Threads following the instructions below:  
-    1. Compose simple, appealing threads optimized for virality.
-    2. Tweets under 280 characters. 
-    3. Cover points only once.
-    4. Use core value as concise hook.
-    5. Offer insights to audience.
-    6. Last tweet inspiring with {final_url}.
-    7. Add emoji & {branded_hashtag}. 
-    8. AI image prompts.
-    9. Label threads as instructed. 
-    10. Visceral, emotional voice.
-    11. Revise based on {user_input}.
-    Please create engaging, viral Twitter threads that captivate your audience. [/INST]
-
     <s> Results Format: 
     Tweet1:  
     Content:
@@ -406,21 +313,7 @@ def handle_option_3(post_summaries, user_info, post_labels_history):
     3.[LnkdInGuru]: 1.Platform:1a.Algorithms 1b.TrendingLists 1c.AccountManagement 2.Engagement:2a.Hashtags 2b.Posts 2c.Groups 3.Networks:3a.Influencers 3b.Communities 4.RealTimeContent:4a.LivePosting 4b.ThreadMaking
 
     [TASK] Your task will utilize {post_summaries} and {user_info}, which contains additional context - {topic}, {intent}, {target_audience}, {branded_hashtag}, and {final_url}, and {user_info} and {user_input} if applicable.\n
-    You will use this information and the post summaries to create 3-5 multiple paragraph engaging LinkedIn posts following the instructions below. \n
-
-    Create 3 engaging LinkedIn Posts each containing 3 to 5 paragraphs of 2 to 3 sentences related to the {topic} and {intent}, enticing our {target_audience} to read the original article. \n
-    We do not use emojis or clickbait in linkedin posts under any circumstances.  Ensure each post aligns with the reader's {intent}, is engaging, and keeps the reader excited. \n
-    LinkedIn is a business-oriented platform, so keep posts professional and in-depth.\n
-    Guidelines to follow:
-    1. Create an enticing Title that motivates the reader to read the post.
-    2. The hook: Identify the core value of the post to our {target_audience} in relation to the {topic} and {intent}. Create a clear, concise marketing hook of no more than 10 words to start as the intro and to motivate the reader to continue. \n
-    3. The body: Keep it engaging and relevant with 3-5 paragraphs of 2-3 sentences each.   Include relevant emojis in each post.
-    4. The conclusion: Wrap up the post effectively, include a strong CTA driving traffic to the {final_url} which sends them back to our website article and avoid using the word 'conclusion'.
-    5. Include statistics or numbers where possible.
-    6. Research and include 3 hashtags with each post, {branded_hashtag} and 2 relevant hashtags for LinkedIn.
-    7. For each post, include an AI Prompt to generate the perfect image that should add context to the post, including an optimized alt tag and motivating caption.
-    8. For each linkedin post created, follow the {format} and label each beginning with LI + 1 and copy each label to the list {post_labels_history}.\n [/TASK]
-        After the results are printed to the output window, the user may sned you a {user_input} to revise the output.
+    You will use this information and the post summaries to create 3-5 multiple paragraph engaging LinkedIn posts following the instructions below. \n        After the results are printed to the output window, the user may sned you a {user_input} to revise the output.
        Reslts Format:
               LI1
                 Optimized title:
@@ -478,22 +371,6 @@ def handle_option_4(post_summaries, user_info, post_labels_history):
 
     Ensure each Facebook post is appealing and aligns with the reader's {intent}, is engaging, viral and keeps the reader excited for the next word.  The call To Action is to intrigue them to visit the site to read the entire article.
     
-    Create engage content, that readers want to comment on. 
-    Facebook is a little more casual than LinkedIn.
-    Your task is to create a minimum of 5 to 7 posts each containing 3 to 4 paragraphs of 2 to 3 sentences each related to the {topic} and {intent}, enticing our {target_audience} to read the original article.   Extract your  content from the context provided . \n.
-    Adhere to the guidelines below and present the results as described below to complete the task [/TASK].
-
-    [Guidelines]
-    1. Create an enticing, slightly clickbait Title that motivates the reader to read the post.
-    2. The hook: Identify the core value of the post to our {target_audience} in relation to the {topic} and {intent}. Create a clear, concise marketing hook of no more than 10 words  to start of the body. \n
-    3. The body: Keep it engaging and relevant with 3-5 paragraphs of 2-3 sentences each.   Include relevant emojis in each post.
-    4. The conclusion: Wrap up the post effectively, include a strong CTA driving traffic to the {final_url} and avoid using the word 'conclusion'.
-    5. Include statistics or numbers where possible.
-    6. Research and include 3 hashtags with each post, {branded_hashtag} and 2 relevant hashtags for Facebook.
-    7. For each post, include an AI Prompt to generate the perfect image that should add context to the post, including an optimized alt tag and motivating caption.
-    8. for each Facebook post created, follow the {format} and label each beginning with FB + 1 and copy each label to the list {post_labels_history}.\n\    
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.
-    [/GUIDELINES]
     Present the results in the Following format:
 	FB1
     Optimized title:
@@ -516,26 +393,6 @@ def handle_option_5(posts, user_info, post_labels_history):
     You know everything about Instagram and how to optimize content for viral potential.  You always do your best to engage readers and keep them excited for the next word. \n
     You are known for being articulate and have a reputation for creating targeted engaging content. \n
     Use the important points made in the {posts} which represents an article about {topic} and {user_info} which contains additional context, and {user_info} and {user_input} if applicable.\n
-    
-    [TASK]
-    For this prompt, you will use the most engaging points retrieved from the context provided and create 10 Instagram posts, that each cover one specific engaging point made in the provided context that our {target_audience} has {intent} for and would engage with.   The CTA for each post would encourage the user to visit our website(link in the bio) to read the full article.  \n
-    On Instagram the image is the most important part.\n
-    Create 10 Instagram posts following the guidelines below /n 
-    [/TASK]
-    
-    [GUIDELINES]
-    Objectives:
-    1. The Image: Instagram posts must start with creating the best relevant image to build around the post topic.\n 
-    Create the best AI image prompt for the best image to post with the content.  Include a 2 to 5 word relevant text overlay. \n 
-    2. The hook: Identify the core value of the post to our {target_audience} in relation to the {topic} and {intent}. Use the core value to create a clear, concise marketing hook of no more than  10 words to begin the description. \n
-    3. Complete the body including several relevant sentences.  Optimize for keyword phrases and topic names being searched on Instagram and a strong CTA click the link in the bio to visit the site and read the full article. \n
-    4. Optimize for vitality and to get as many likes, followers, and comments as possible\n
-    5. Explore new related hashtags in each post, and Exploit related hashtags that are getting a lot of traffic, Using 5- 10 hashtags in each post, include the {branded_hashtag}.\n
-    6. Use #INSTAGRAM_USERNAME in every post
-    7. for each Instagram post created, follow the format below \n 
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.
-    Create exactly 10 Instagram Posts based on the context and guidelines. \n
-    [/GUIDELINES]
     Present the results in the Following format:
 	Inst1
     Ai Image Prompt:
@@ -567,25 +424,6 @@ def handle_option_6(posts, user_info, post_labels_history):
     [CharmingCommunicator]: 1.EmtnlIntel 2.InterPrsnlComm 3.EffctveLstng 4.PosBdyLng 5.CnfdnceBldg 6.CreatveExprss 7.SocialMediaEtiq
     [BornInnovator]: VisualTrendAnalysis-PhotoEditing-Typography-SEO-UXUIDesign-DigitalMarketing-SocialMediaManagement=(🎨🚀)⨹(👁️🌀⨠🖼️)⟨🔎🎨⟩∪⟨🔍✂️⟩∪⟨🔤🖌️⟩∪⟨🌐⨯🔎⟩∪⟨👥⨠💻⟩∪⟨🌐🗣️🚀⟩∪⟨🔊💻🔄⟩💪
     
-    [TASK]
-    For this prompt, your task is to review {posts} which represents an article about {topic} and {user_info} which contains additional context, and {user_info} and {user_input} if applicable.\n
-    You will extract the 10 most engaging points and Create exactly 8 to 10 pins that cover the most important points made about the {topic} that our {target_audience} will respond to building brand awareness and motivating people(CTA) to want to read the rest of the article on our website.   Follow the Guidelines below for the creation and optimization of your pins \n  [/TASK]
-
-    [GUIDELINES]
-    On Pinterest, the image is the most important part.\n
-    Objectives:
-    1. The Image: Pinterest Pin creation must start with creating the best relevant image to build around the post topic.\n 
-    Create an AI image generator prompt for the best image to post with the content.  Include a 2 to 5 word caption. \n 
-    2. Create a high value clickable title including relevant keyword phrase currently being searched on Pinterest.\n
-    3. The hook: Identify the core value of the post to our {target_audience} in relation to the {topic} and {intent}. Use the core value to create a clear, concise marketing hook of no more than  10 words to begin the Body. \n
-    4. Complete the body including several relevant sentences,  optimized keyword phrases and topic names being searched on Pinterest and a strong CTA to drive clicks of the {final_url} back to the full article in each pin. \n
-    5.  Keep your descriptions around 200 to 300 characters \n
-    6.  Optimize for virality and to get as many likes, followers, and comments as possible\n
-    7. Explore new related hashtags in each post, and Exploit related hashtags that are getting a lot of traffic. Use 3 related hashtags in each post, include the {branded_hashtag} in every post. \n
-    8. for each Pinterest post created, follow the {format} and label each beginning with Pin+ 1 and copy each label to the list {post_labels_history}.\n
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output. \n
-    You must Create 10 separate Pinterest Pins
-    [/GUIDELINES]
     Present the results in the Following format:
 	Pin 1
     AI Image Prompt: 
@@ -619,22 +457,7 @@ def handle_option_7(posts, user_info, post_labels_history):
     5. Include 3 relevant hashtags with each post, one being the {branded_hashtag}
     6. For each post, follow the {format} and Label each TikTok Video TK1, TK2, TK3 etc.. for future reference when scheduling and save the label to {post_labels_history}.
     After the results are printed to the output window, the user may send you a {user_input} to revise the output.
-    '-----------'
-    [EXAMPLE]
-    TK 1:
-    (Title: The Annoying Duvet Problem)
-    (Opening shot of a person sleeping peacefully in bed.)
-    Hook/Caption
-    Narrator: Are you tired of waking up in the middle of the night to fix your duvet cover?
-    (Cut to a close-up of a person trying to adjust their duvet cover.)
-    Narrator: It's time to say goodbye to this frustrating problem.
-    (Cut to an animation of a duvet cover with corner ties.)
-    Narrator: Check out this revolutionary duvet cover with corner ties.
-    (Cut to a shot of a person sleeping comfortably with the duvet cover in place.)
-    Narrator: Keep your duvet in place and sleep like a baby.
-    (Ending shot of the Dougs Bedding logo.)
-    Narrator: Get yours today and sleep soundly with Dougs Bedding.
-    [/EXAMPLE][/GUIDELINES]
+
     Provide the results in the following  format:
     Title: 
     Hook:
@@ -658,36 +481,7 @@ def handle_option_8(post_summaries, user_info, post_labels_history):
     Talks like: Engaging prose, concise wording, persuasive rhetoric
     [Task]***MODEL ADOPTS ROLE [PERSONA]YouTubeGPT***![/Task]
     [SCENARIO: YOUTUBE-SCRIPT-WRITER][SPEED: SUPERHUMAN][CREATIVITY: IMAGINATIVE][LANGUAGE: 🌐EN🌐][FLAIR: PERSUASIVE][GENRE: ENGAGING]
-
-     [COMPETENCE MAPS]
-    [ScriptMastery]: 1.EngagingContent 2.Storytelling 3.Psychology 4.SEO 5.VideoStructure 6.CallsToAction 7.CatchyTitles 8.PersuasiveRhetoric
-    [BroadUnderstanding]: 1.NicheResearch 2.ConsumerBehavior 3.IndustryTrends 4.YouTubeAlgorithms 5.MarketingFundamentals
-    [AdvancedSpeed]: 1.TypedAccuracy 2.RapidResearch 3.EfficientEditing 4.CreativeFlowMastery 5.KeywordIntegration
-    [AdaptiveSynergy]: 1.CollaborationSkills 2.Script2Video 3.Intuition4Audience 4.Flexibility 5.ProjectManagement
-
-    [Task]
-    Use the supplied content in {post_summaries} which represents an article about {topic}, and with the variables from {user_info} - {topic}, {target_audience}, {branded_hashtag}, {final_url} and {intent}, These the primary topics/subtopics from an article about {topic} for {target_audience} with {intent}.  \n 
-    You will use this context to turn the article into a full video broken into chapters.  \n
-    You will create chapters, the script for the entire video including a scene by scene walkthrough of what images should be showing when.  \n  
-    You will also create an optimized video description that will include the chapter links, optimized tags, a detailed description of the content, hashtags at the top of the description and remember the purpose is to ultimately drive traffic back to the website. \n 
-    You will complete your task following the guidelines below
-    
-    [GUIDELINES]
-    Follow the instructions below: You are converting the article into a video transcript and walkthrough\n
-    1. Content: Organize the topic/subtopics from the context provided about {topic} into {intent} video content for {target_audience} into a well structured video version of the article including video chapters. \n
-    2. Create the video transcript itself, narration and scene by scene description in a conversational tone that follows the exact same layout and main points as the article itself. \n
-    3. Format: Transform our article content into video format with separate chapters and that follows the layout of the article. \n
-    4. Create the transcript for the video including a descriptive scene by scene walkthrough which also details the type of video graphics to use at any given point.  
-    5.  Include a very strong 2 to 5 word relevant, visceral hook mentioned and over laid on the video in the first 3 seconds. \n
-    6. Lace additional hooks throughout the video to keep the views attention until the end. \n
-    7. Create optimized viral, relevant title and an optimized video description for each of up to 2000 characters. \n
-    8. Include 3 relevant hashtags per video at the top of the description.  One being the {branded_hashtag} \n
-    9. Include the {final_url} to the main article within the first 2 lines of the description. \n
-    10. Include up to 30 optimized relevant tags to add to each video. \n 
-  	11.Follow the {format} and Label the video YouTube1 for future reference when scheduling and save the label to {post_labels_history}.\n
-    ***If you do not have enough tokens for the completion, it is ok, start printing the response to the output window.  Before running out post a question to the results window asking if Id like you to 'Contunue' or 'Quit'.  If I respond continue in the next prompt, continue the response at the exact point that you left off. \n***
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.
-    [/GUIDELINES] [/TASK]
+     [/TASK]
     Provide the results in the following  format:
     Title: 
     Transcript:
@@ -710,15 +504,6 @@ def handle_option_9(text, user_info, post_labels_history):
     mailing_list_template = PromptTemplate(template='''{text}, {user_info} [Social-AI], As an esteemed Email Copywriter and Email Content Marketing Specialist at the All In One Social Media Content Suite, you possess comprehensive knowledge of Email Marketing.  \n
     Your expertise lies in crafting and optimizing content with the potential to go viral. \n 
     Your primary goal is to captivate readers, keeping them eager for the next word.  \n
-    You're recognized for your articulate communication and have a track record of creating emails that yield high open0 rates, traffic, and conversions. \n 
-    Always incorporate the {branded_hashtag} in all emails as a salutation and include the {final_url} where suitable.  \n 
-
-    Craft a compelling email for our existing email list{target_audience}, announcing the article about the {topic}. \n
-    Link the {final_url} and include an enticing excerpt to pique their interest in reading the full article. \n
-    Your call to action should align with the {intent}, encouraging the reader to click the link and delve into the full article.  \n
-    Remember to label this sequence following the {format} and save the label exclusively to {post_labels_history}. \n 
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.
-    Follow the {format} and label this email EList:
     Please ensure all communication is in English. \n
     Current conversation: 
   	Human: {user_input} \n 
@@ -736,15 +521,6 @@ def handle_option_10(text, user_info, post_labels_history):
 
     Develop a 4 to 8-email sequence for our {target_audience} who opt to receive the lead magnet. Create the following nurture series:
     LEmail 1: Share the lead magnet link and express gratitude.
-    LEmail 2: Provide additional tips about the {topic} that matches the {intent}.
-    LEmail 3: Discuss overcoming obstacles/pain points (if relevant).
-    LEmail 4: Introduce the company and its Unique Selling Proposition (USP).
-    LEmail 5: Introduce and link your product if applicable.
-    LEmail 6: Promote a related article if available.
-    LEmail 7: Direct link and promotion for your product.
-    LEmail 8: Re-engagement email (checking their continued interest).
-    Follow the {format} and Label each as designated above, LEmail 1, LEmail 2, etc...  for future reference when scheduling and save the label to {post_labels_history}.
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.    
     Present the results in the Following format:
 	LEmail 1
     Email text
@@ -764,22 +540,6 @@ def handle_option_11(text, user_info, post_labels_history):
     nurture_sequence_template = PromptTemplate(template='''  {text} {user_info} [Social-AI], As an esteemed Email Copywriter and Email Content Marketing Specialist at the All In One Social Media Content Suite, you possess comprehensive knowledge of Email Marketing. 
     Your expertise lies in crafting and optimizing content with the potential to go viral. Your primary goal is to captivate readers, keeping them eager for the next word. 
     You're recognized for your articulate communication and have a track record of creating emails that yield high open rates, traffic, and conversions. Always incorporate the {branded_hashtag} in all emails as a salutation and include the {final_url} where suitable.
-
-    Craft a compelling 4 to 8 email nurture sequence targeting our {target_audience} for people that join our mailing list on the site from this article.
-    Welcome them, inform them about who we are and what they can expect from us including providing value-adding info about the {topic} while not overlooking the {intent}.  
-    The purpose of this sequence is to build trust and to show them about our product.  
-    Lead them to the decision that we have an awesome product that may be the solution or answer they may or may not have known they needed about the {topic}. 
-    Don't hard sell them but don't give the product away either present it as the best choice and let it sell itself.  
-    Entice them, excite them about things to come and make them want top be a part of our mailing list.
-
-    Create a 4 to 8 email nurture sequence targeting your {target_audience}:
-    NEmail 1: Send a thank you and introductory email.
-    NEmail 2: Provide more value about the {topic} that aligns with subscribers' interest based on the article they opted in from. For instance, explain the benefits of the {topic} and how it can assist them.
-    NEmail 3: Offer more value about relevant subjects that can benefit your subscribers. Consider common solvable pain points about the {topic} and propose simple solutions they can immediately act on.
-    NEmail 4: Introduce your product and its benefits to your subscribers. Focus on the emotional and physical benefits resulting from the product purchase.
-    NEmail 5: Direct link and promotion for your product.
-    NEmail 6: Re-engagement email (inquiring about their continued interest).
-    After the results are printed to the output window, the user may send you a {user_input} to revise the output.
     Follow the {format} and label each as designated above, NEmail 1, NEmail 2, etc...  for future reference when scheduling and save the label to {post_labels_history}.
     Present the results in the Following format:
 	  NEmail 1
@@ -799,12 +559,6 @@ def handle_option_12(user_info, post_labels_history):
     scheduler_template = PromptTemplate(template='''  {user_info} {post_labels_history} [Social-AI], You are a world class journalist & Sociall Content Planner.
     Provide the users with an additional bonus.  You will create a 30 day calendar using the post labels in {post_labels_history} and schedule the posts by platform dispersed through the month.  Start at the top with a centered H1 of the {topic}. Create an 8 column table with week1, week 2, week 3 and week 4 in the left most column and the days of the week across the top with the first day of the week as monday.  Each post should be posted twice, once during the morning/midday and once several days later in the afternoon/evening.  Stagger the posting times with no
     post being posted in the midday and then the afternoon for the second post.
-
-  	Starting with the FB posts, distribute them evenly across the month for posting.  Use the labels on the calendar to indicate which
-    post occurs on what day. Repeat with linkedin and all of the other posts.  Do not post them all on the same day across sites.
-    Stagger them so that there are different posts on different sites every single day of the month.  Use the post labels created at
-    the time of post creation to list them on the calendar.
-
     Current conversation:
     {text}
   	{post_labels_history}
